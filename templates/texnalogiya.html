@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block title %} Texnalogiyaga oid habarlar {% endblock title %}
+
+{% block content %}
+{% load static %}
+
+{% for news in texnalogiya_yangiliklar %}
+
+<div class="container">
+    <div class="row">
+        <div class="col-sm-8" >
+            <a href="{{ news.get_absolute_url }}">
+                <img src="{{ news.image.url }}" alt="{{ news.title }}" style="width: 50%;">
+                <h2 class="fw-bolder">{{ news.title }}</h2>
+            </a>
+        </div>
+    </div>
+</div>
+
+{% endfor %}    
+
+{% endblock content %}

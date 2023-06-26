@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+{% block title %} {{ new_detail.title }} {% endblock title %}
+
+{% block content %}
+{% load static %}
+    <h1 class="fw-bolder">{{ new_detail.title }}</h1>
+    <h5>{{ new_detail.publish_time }}</h5>
+    <img src="{{ new_detail.image.url }}" alt="yoq">
+    <p>Published date: {{ new_detail.publish_time }}</p>
+    <p>{{ new_detail.body }}</p>
+    
+</body>
+</html>
+
+{% endblock content %}
+
