@@ -1,4 +1,6 @@
+from django.contrib.auth.models import User
 from django.db import models
+from django.utils.text import slugify
 from django.utils.safestring import mark_safe
 from django.utils import timezone
 from django.urls import reverse
@@ -31,12 +33,12 @@ class News(models.Model):
                             choices=Status.choices,
                             default=Status.Draft
                             )
-    
     objects=models.Manager()
     published=PublishedManager()
 
     def photo(self):
         return mark_safe(f"""<a href='{self.image.url}' ><img src='{self.image.url}' width=100 style="border-radius: 10px;" /></a>""")
+
 
 
     class Meta:
@@ -55,3 +57,16 @@ class Contact(models.Model):
 
     def __str__(self):
         return self.name
+
+class Comment(models.Model):
+    news=models.ForeignKey(News,on_delete=models.CASCADE,related_name='comments')
+    user=models.ForeignKey(User,on_delete=models.CASCADE,related_name='comments')
+    body=models.TextField()
+    created_time=models.DateTimeField(auto_now_add=True)
+    active=models.BooleanField(default=True)
+
+    class Meta:
+        ordering=['created_time']
+
+    def __str__(self):
+        return f"Comment - {self.body} Avtor - {self.user}"

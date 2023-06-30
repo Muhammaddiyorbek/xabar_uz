@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block title %} Foydalanuvchi profili {% endblock title %}
+
+{% block content %}
+{% load static %}
+
+    <h3>Xush kelibsiz {{ user.username }}</h3>
+    <h2>Sizning malumotlaringiz</h2>
+
+    <div class="container">
+        <div class="row">
+
+            <div class="bg-danger col-lg-6">
+                {% if profile.photo  %}
+                <img src="{{ profile.photo.url }}" style="width:100%;"><br>
+                {% endif %}
+
+            </div>
+
+            <div class="col-lg-6">
+                <label >Ismingiz : {{ request.user.first_name }}</label><br>
+                <label >Familiyangiz : {{ request.user.last_name }}</label><br>
+                <label >Tug'ulgan yilingiz : {{ profile.date_of_birth }}</label><br>
+                <label >Username : {{ request.user.username }}</label><br>
+                <label >Email : {{ request.user.email }}</label><br><br>
+                <a href="{% url 'password_change' %}" class="btn btn-info">Parolni almashtirish</a>
+                <a href="{% url 'logout' %}" class="btn btn-danger">Logout</a>
+                <a href="{% url 'edit_user_information' %}" class="btn btn-success">Profile tahrirlash</a>
+            </div>
+
+        </div>
+    </div>
+
+{% endblock content %}
+

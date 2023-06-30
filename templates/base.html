@@ -17,6 +17,7 @@
 <link rel="stylesheet" type="text/css" href="{% static 'css/theme.css' %}">
 <link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}">
 
+
 <script src="{% static 'js/html5shiv.min.js' %}"></script>
 <script src="{% static 'js/respond.min.js' %}"></script>
 
@@ -36,16 +37,25 @@
               <li><a href="{% url 'home' %}">Bosh sahifa</a></li>
               <li><a href="#">Biz haqimizda</a></li>
               <li><a href="{% url 'cantag_page' %}">Biz bilan aloqa</a></li>
+              {% if request.user.is_authenticated and request.user.is_superuser %}
+              <li><a href="{% url 'admin_panel' %}">Admin sahifasi</a></li>
+              {% endif %}
             </ul>
           </div>
           <div class="header_top_right">
+            {% if request.user.is_authenticated %}
+            <p><a href="{% url 'logout' %}" style="color:red;margin-left: 10px;font-size:15px;border:1px solid white;padding:8px;">Logout</a></p>
+            <p><a href="{% url 'user_profile' %}" style="color:yellow;margin-left: 10px;font-size:15px;border:1px solid white;padding:8px;">{{ request.user.username }}</a></p>
+            {% else %}
+            <p><a href="{% url 'login' %}" style="color:yellow;margin-left: 10px;border:1px solid white;padding:8px;font-size:15px">Login</a></p>
+            {% endif %}
             <p>{% now "jS F Y H:i" %}</p>
           </div>
         </div>
       </div>
       <div class="col-lg-12 col-md-12 col-sm-12">
         <div class="header_bottom">
-          <div class="logo_area"><a href="index.html" class="logo"><img src="{% static 'images/logo.jpg' %}" alt=""></a></div>
+          <div class="logo_area"><a href="{% url 'home' %}" class="logo"><img src="{% static 'images/logo.jpg' %}" alt=""></a></div>
           <div class="add_banner"><a href="#"><img src="{% static 'images/addbanner_728x90_V1.jpg' %}" alt=""></a></div>
         </div>
       </div>
@@ -65,6 +75,11 @@
           {% endif %}
           {% endfor %}
           <li><a href="{% url 'cantag_page' %}">Biz bilan aloqa</a></li>
+           <li style="margin-top:8px;width:400px;margin-left:30px;">
+              <form method="get" action="{% url 'search' %}">
+                <input type="search" name="q" placeholder="Qidiruv..." class="form-control">
+              </form>
+          </li>
         </ul>
       </div>
     </nav>
@@ -130,7 +145,7 @@
       </div>
     </div>
     <div class="footer_bottom">
-      <p class="copyright">Copyright &copy; 2045 <a href="index.html">NewsFeed</a></p>
+      <p class="copyright">Copyright &copy; 2045 <a href="{% url 'home' %}">NewsFeed</a></p>
       <p class="developer">Developed By Wpfreeware</p>
     </div>
   </footer>

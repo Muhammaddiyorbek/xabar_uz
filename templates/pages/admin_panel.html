@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+
+{% block title %} Admin Panel {% endblock title %}
+
+{% block content %}
+{% load static %}
+    <h1>Admin Panel</h1>
+
+<table class="table table-bordered table-responsive table-striped">
+    <tr >
+        <th>Username</th>
+        <th>Ismi</th>
+        <th>Familiyasi</th>
+    </tr>
+    {% for admin in admin_users %}
+        <tr>
+            <td>{{ admin.username }}</td>
+            <td>{{ admin.first_name }}</td>
+            <td>{{ admin.last_name }}</td>
+        </tr>
+    {% endfor %}
+</table>
+
+<h2><a href="{% url 'catigory_create' %}" class="text-primary"> + CATIGORYA QOSHISH</a></h2>
+<h2><a href="{% url 'news_create' %}" class="text-primary"> + YANGILIK QOSHISH</a></h2>
+
+{% endblock content %}
+

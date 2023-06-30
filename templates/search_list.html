@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block title %} Search Resoult {% endblock title %}
+
+{% block content %}
+{% load static %}
+
+<h1>Search Resoult</h1>
+{% for search in search_list %}
+    <hr style="border:1px solid black;">
+
+    <h3>
+        <a href="{{ search.get_absolute_url }}" class="text-danger"> {{ search.title }}</a>
+    </h3>
+
+    <a href="{{ search.get_absolute_url }}" class="text-danger">
+        <img src="{{ search.image.url }}" style="width:30%;">
+    </a>
+    <p style="margin-bottom:25px;margin-top:8px">{{ search.body | truncatewords:30 }}</p>
+
+{% endfor %}
+
+{% endblock content %}

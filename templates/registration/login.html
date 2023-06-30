@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+
+{% block title %} Login sahifasi {% endblock title %}
+
+{% block content %}
+{% load static %}
+
+    <h2>Vew-saytga kirish - login</h2>
+    <p>Saytga kirish uchun quyidagi formani to'ldiring!</p>
+
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <a href="{% url 'password_reset' %}" class=" text-danger" >Parilni unutdingizmi ?</a><br><br>
+    <button type="submit" class="btn btn-info">Login</button>
+    </form>
+<a href="{% url 'user_regstr' %}" class="btn btn-info">Ro'yxatdan o'tish</a>
+
+{% endblock content %}
+

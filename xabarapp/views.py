@@ -1,8 +1,19 @@
+from django.contrib.auth.decorators import login_required, user_passes_test
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.db.models import Q
 from django.shortcuts import render,get_object_or_404
+from hitcount.utils import get_hitcount_model
+from hitcount.views import HitCountMixin
+
 from .models import *
+from django.contrib.auth.models import User
 from .forms import *
 from django.http import HttpResponse
 from django.views.generic import *
+from django.urls import reverse_lazy
+from django.contrib.auth.mixins import LoginRequiredMixin
+from xabaruz.custom_permison import OnlyLoggedSuperUser
+
 
 
 # def indexview(request):
@@ -31,10 +42,9 @@ class HomePageView(ListView):
         context['xorij_xabarlari']=News.published.all().filter(category__name='Xorij').order_by('-publish_time')[:6]
         context['sport_xabarlari']=News.published.all().filter(category__name='Sport').order_by('-publish_time')[:6]
         context['texnalogiya_xabarlari']=News.published.all().filter(category__name='Texnalogiya').order_by('-publish_time')[:6]
-        
-
         return context
 
+@login_required(login_url='login')
 def new_list(request):
     news_all=News.objects.all()
     context={
@@ -42,10 +52,38 @@ def new_list(request):
     }
     return render(request,'news_list.html',context)
 
+@login_required(login_url='login')
 def news_detail(request,news):
-    new_detail=get_object_or_404(News, slug=news)
+    new_detail=get_object_or_404(News, slug=news,status=News.Status.Published)
+    context={}
+    hit_count=get_hitcount_model().objects.get_for_object(new_detail)
+    hits=hit_count.hits
+    hitcontext=context['hitcount']={'pk':hit_count.pk}
+    hitcount_response=HitCountMixin.hit_count(request,hit_count)
+    if hitcount_response.hit_counted:
+        hits=hits+1
+        hitcontext['hit_counted']=hitcount_response.hit_counted
+        hitcontext['hit_message']=hitcount_response.hit_message
+        hitcontext['total_hits']=hits
+    comments=new_detail.comments.filter(active=True)
+    comment_count=comments.count()
+    new_comment=None
+    if request.method=="POST":
+        comment_form=CommentForm(data=request.POST)
+        if comment_form.is_valid():
+            new_comment=comment_form.save(commit=False)
+            new_comment.news=new_detail
+            new_comment.user=request.user
+            new_comment.save()
+            comment_form = CommentForm()
+    else:
+        comment_form=CommentForm()
     context={
-        'new_detail':new_detail
+        'new_detail':new_detail,
+        'comments':comments,
+        'new_comment':new_comment,
+        'comment_count':comment_count,
+        'comment_form':comment_form
     }
     return render(request,'news_detail.html',context)
 
@@ -59,7 +97,7 @@ def news_detail(request,news):
 #     }
 #     return render(request,'contact.html',context)
 
-class ContactPageView(TemplateView):
+class ContactPageView(LoginRequiredMixin,TemplateView):
     template_name='contact.html'
 
     def get(self,request,*args,**kwargs):
@@ -80,7 +118,7 @@ class ContactPageView(TemplateView):
         }
         return render(request,'contact.html',context)
     
-class MahalliyNewsView(ListView):
+class MahalliyNewsView(LoginRequiredMixin,ListView):
     model=News
     template_name='mahalliy.html'
     context_object_name='mahaliy_yangiliklar'
@@ -89,7 +127,7 @@ class MahalliyNewsView(ListView):
         news=self.model.published.all().filter(category__name='Mahalliy')
         return news
     
-class XorijNewsView(ListView):
+class XorijNewsView(LoginRequiredMixin,ListView):
     model=News
     template_name='xorij.html'
     context_object_name='xorij_yangiliklar'
@@ -98,7 +136,7 @@ class XorijNewsView(ListView):
         news=self.model.published.all().filter(category__name='Xorij')
         return news
 
-class TexnalogiyaNewsView(ListView):
+class TexnalogiyaNewsView(LoginRequiredMixin,ListView):
     model=News
     template_name='texnalogiya.html'
     context_object_name='texnalogiya_yangiliklar'
@@ -107,7 +145,7 @@ class TexnalogiyaNewsView(ListView):
         news=self.model.published.all().filter(category__name='Texnalogiya')
         return news
 
-class SportNewsView(ListView):
+class SportNewsView(LoginRequiredMixin,ListView):
     model=News
     template_name='sport.html'
     context_object_name='sport_yangiliklar'
@@ -115,3 +153,44 @@ class SportNewsView(ListView):
     def get_queryset(self):
         news=self.model.published.all().filter(category__name='Sport')
         return news
+    
+class NewsUpdateView(OnlyLoggedSuperUser,UpdateView):
+    model=News
+    fields=['title','body','image','category','status']
+    template_name='news_edit.html'
+
+
+    
+
+class NewsDeleteView(OnlyLoggedSuperUser,DeleteView):
+    model=News
+    template_name='news_delete.html'
+    success_url=reverse_lazy('home')
+
+class CatigoryCreateView(OnlyLoggedSuperUser,CreateView):
+    model=Catigor
+    template_name='catigory_create.html'
+    fields=['name','url']
+    success_url = reverse_lazy('home')
+class NewsCreateView(OnlyLoggedSuperUser,CreateView):
+    model=News
+    template_name='news_create.html'
+    fields=['title','body','image','category','status']
+
+@login_required
+@user_passes_test(lambda u:u.is_superuser)
+def admin_panel(request):
+    admin_users=User.objects.filter(is_superuser=True)
+    context={
+        'admin_users':admin_users
+    }
+    return render(request,'pages/admin_panel.html',context)
+
+class SearchResoult(ListView):
+    model = News
+    template_name = 'search_list.html'
+    context_object_name = 'search_list'
+
+    def get_queryset(self):
+        query=self.request.GET.get('q')
+        return News.objects.filter(Q(title__icontains=query)|Q(body__icontains=query))
